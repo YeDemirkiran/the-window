@@ -1,5 +1,5 @@
+using System.Collections;
 using UnityEngine;
-using static UnityEngine.UI.Image;
 
 public enum Axis { x, y, z }
 
@@ -8,11 +8,23 @@ public class PanelTravel : MonoBehaviour
     [SerializeField] Axis axis = Axis.x;
     [SerializeField] float speed, raycastDistance;
     [SerializeField] LayerMask raycastLayermask;
+    [SerializeField] Transform meshObject;
+
+    [Header("Fade")]
+    [SerializeField] float fadeDuration;
+    [SerializeField] float fadeEmission;
 
     bool instantiatedPanel = false, destroyed = false;
     int instantiatedSide = 0;
 
     public GameObject motherObject { get; set; }
+    GameObject createdObject;
+    new Renderer renderer;
+
+    private void Awake()
+    {
+        renderer = GetComponent<Renderer>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -56,18 +68,38 @@ public class PanelTravel : MonoBehaviour
                     instantiatedPanel = true;
                     instantiatedSide = 1;
 
+                    PlayerController player = null;
+
+                    foreach (Transform child in transform)
+                    {
+                        if (child.TryGetComponent(out player))
+                        {
+                            player.transform.parent = null;
+                            break;
+                        }
+                    }
+
                     GameObject newPanel = Instantiate(gameObject);
+                    newPanel.name = gameObject.name;
 
                     newPanel.transform.position = hit.point;
 
-                    newPanel.transform.position -= transform.right * transform.lossyScale.z / 2f;
-                    newPanel.transform.position -= transform.forward * transform.lossyScale.x / 2f;
+                    newPanel.transform.position -= transform.right * meshObject.lossyScale.z / 2f;
+                    newPanel.transform.position -= transform.forward * meshObject.lossyScale.x / 2f;
 
                     newPanel.transform.Rotate(Vector3.up * -90f);
 
                     newPanel.GetComponent<PanelTravel>().motherObject = gameObject;
 
-                    Debug.Log("3");
+                    createdObject = newPanel;
+
+                    if (player != null)
+                    {
+                        player.transform.parent = createdObject.transform;
+                        player.currentMovingObject = createdObject.transform;
+                    }
+
+                    //Debug.Log("3");
                 }
                 else if (AxisRaycast(raycastDistance, axis, raycastLayermask, out hit) == -1)  // Negative side
                 {
@@ -81,29 +113,49 @@ public class PanelTravel : MonoBehaviour
                     instantiatedPanel = true;
                     instantiatedSide = -1;
 
-                    Debug.Log("4");
+                    //Debug.Log("4");
+                    PlayerController player = null;
+
+                    foreach (Transform child in transform)
+                    {
+                        if (child.TryGetComponent(out player))
+                        {
+                            player.transform.parent = null;
+                            break;
+                        }
+                    }
 
                     GameObject newPanel = Instantiate(gameObject);
+                    newPanel.name = gameObject.name;
 
                     newPanel.transform.position = hit.point;
-                    newPanel.transform.position += transform.right * transform.lossyScale.z / 2f;
-                    newPanel.transform.position -= transform.forward * transform.lossyScale.x / 2f;
+                    newPanel.transform.position += transform.right * meshObject.lossyScale.z / 2f;
+                    newPanel.transform.position -= transform.forward * meshObject.lossyScale.x / 2f;
 
                     newPanel.transform.Rotate(Vector3.up * 90f);
 
                     newPanel.GetComponent<PanelTravel>().motherObject = gameObject;
+
+                    createdObject = newPanel;
+
+                    if (player != null)
+                    {
+                        player.transform.parent = createdObject.transform;
+                        player.currentMovingObject = createdObject.transform;
+                    }        
                 }
             }
             else if (!destroyed)
             {
-                if (AxisRaycast(transform.position - (axisVec * transform.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == 1 && instantiatedSide == -1) // Positive side
+                if (AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == 1 && instantiatedSide == -1) // Positive side
                 {
                     // Destroy panel
-                    Debug.Log("1");
+                    //Debug.Log("1");
+
                     Destroy(gameObject);
                     destroyed = true;
                 }
-                else if (AxisRaycast(transform.position - (axisVec * transform.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == -1 && instantiatedSide == 1)  // Negative side
+                else if (AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == -1 && instantiatedSide == 1)  // Negative side
                 {
                     Destroy(gameObject);
                     destroyed = true;
@@ -112,7 +164,7 @@ public class PanelTravel : MonoBehaviour
         }
         else
         {
-            Debug.Log("We have a mother object, waiting for it to get destroyed");
+            //Debug.Log("We have a mother object, waiting for it to get destroyed");
         }     
     }
 
@@ -272,6 +324,44 @@ public class PanelTravel : MonoBehaviour
             case Axis.z:
                 transform.position += transform.forward * speed * Time.deltaTime;
                 break;
+        }
+    }
+
+    void FadePanel()
+    {
+        StopAllCoroutines();
+        StartCoroutine(Fade());
+    }
+
+    IEnumerator Fade()
+    {
+        float lerp = 0f;
+        Material mat = renderer.material;
+
+        mat.EnableKeyword("_EmissionColor");
+
+        Color startingEmission = mat.GetColor("_EmissionColor");
+        Color targetEmission = startingEmission;
+        targetEmission.a = fadeEmission;
+
+        while (lerp < 1f)
+        {
+            lerp += Time.deltaTime / fadeDuration;
+
+            mat.SetColor("_EmissionColor", Color.Lerp(startingEmission, targetEmission, lerp));
+
+            yield return null;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("anan");
+
+        if (collision.transform.CompareTag("Player"))
+        {
+            Debug.Log("baban");
+            FadePanel();
         }
     }
 }

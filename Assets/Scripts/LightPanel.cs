@@ -6,21 +6,38 @@ public class LightPanel : MonoBehaviour
     [SerializeField] float fadeDuration;
 
     new Renderer renderer;
+    new Collider collider;
     bool collided = false;
 
     // Start is called before the first frame update
     void Awake()
     {
         renderer = GetComponent<Renderer>();
+        collider = GetComponent<Collider>();
     }
 
-    private void OnCollisionEnter(Collision collision)
+    //private void OnCollisionEnter(Collision collision)
+    //{
+    //    if (!collided && collision.transform.root.CompareTag("Player"))
+    //    {
+    //        FadePanel();
+    //        transform.parent = collision.transform.root;
+    //        collided = true;
+    //        collider.enabled = false;
+    //    }
+    //}
+
+    private void OnTriggerEnter(Collider other)
     {
-        if (!collided && collision.transform.root.CompareTag("Player"))
+        if (!collided && other.transform.root.CompareTag("Player"))
         {
             FadePanel();
-            transform.parent = collision.transform.root;
+            transform.parent = other.transform.root;
             collided = true;
+            collider.enabled = false;
+
+            other.transform.GetComponent<PlayerController>().rb.isKinematic = false;
+            other.transform.GetComponent<PlayerController>().rb.AddForce(other.transform.forward * 100f, ForceMode.VelocityChange);
         }
     }
 
