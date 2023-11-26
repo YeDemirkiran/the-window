@@ -2562,7 +2562,7 @@ MonoBehaviour:
     m_Bits: 59
   meshObject: {fileID: 695331248}
   fadeDuration: 1
-  fadeEmission: 0
+  emissionColor: {r: 0.0021408652, g: 0.041260306, b: 0.0021408652, a: 0}
 --- !u!1 &902518913
 GameObject:
   m_ObjectHideFlags: 0
@@ -5373,7 +5373,7 @@ MonoBehaviour:
     m_Bits: 59
   meshObject: {fileID: 831223030}
   fadeDuration: 1
-  fadeEmission: 0
+  emissionColor: {r: 0.0021408652, g: 0.041260306, b: 0.0021408652, a: 0}
 --- !u!4 &1733172917
 Transform:
   m_ObjectHideFlags: 0
@@ -5427,7 +5427,7 @@ MonoBehaviour:
     m_Bits: 59
   meshObject: {fileID: 1236178734}
   fadeDuration: 1
-  fadeEmission: 0
+  emissionColor: {r: 0.0021408652, g: 0.041260306, b: 0.0021408652, a: 0}
 --- !u!4 &1744445099
 Transform:
   m_ObjectHideFlags: 0
@@ -5969,6 +5969,9 @@ MonoBehaviour:
   clickShakeDuration: 0.125
   clickShakeFrequency: 50
   clickShakeMagnitude: 0.5
+  hitShakeDuration: 0.125
+  hitShakeFrequency: 50
+  hitShakeMagnitude: 0.5
 --- !u!1 &1873648683
 GameObject:
   m_ObjectHideFlags: 0

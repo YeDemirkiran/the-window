@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float clickShakeDuration = 0.25f;
     [SerializeField] float clickShakeFrequency = 25f, clickShakeMagnitude = 0.5f;
 
+    [SerializeField] float hitShakeDuration = 0.5f;
+    [SerializeField] float hitShakeFrequency = 50f, hitShakeMagnitude = 0.75f;
+
     public Transform currentMovingObject { get; set; }
 
     private void Start()
@@ -38,15 +42,27 @@ public class PlayerController : MonoBehaviour
             currentMovingObject = null;
             attachAtDestination = false;
 
-            destination = hit.point - transform.forward;   
+            destination = hit.point - transform.forward;
+
+            UnityAction action = null;    
 
             if (hit.collider.CompareTag("Stopper"))
             {
+                if (hit.transform.root.TryGetComponent(out Panel panel))
+                {
+                    action += panel.FadePanel;
+                }
+
                 currentMovingObject = hit.collider.transform;
                 attachAtDestination = true;
             }
+            else
+            {
+                action += () => rb.AddForce(-transform.forward * 10f, ForceMode.VelocityChange);
+                action += () => CameraEffects.Shake(hitShakeDuration, hitShakeFrequency, hitShakeMagnitude);
+            }
 
-            MoveToDestination();
+            MoveToDestination(action);
 
             // Effects
 
@@ -60,13 +76,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void MoveToDestination()
+    void MoveToDestination(UnityAction action)
     {
         StopAllCoroutines();
-        StartCoroutine(Move(destinationReachTime));
+        StartCoroutine(Move(destinationReachTime, action));
     }
 
-    IEnumerator Move(float duration)
+    IEnumerator Move(float duration, UnityAction actionAtReach)
     {
         float lerp = 0f;
         rb.isKinematic = true;
@@ -91,6 +107,11 @@ public class PlayerController : MonoBehaviour
         else
         {
             rb.isKinematic = false;
+        }
+
+        if (actionAtReach != null)
+        {
+            actionAtReach.Invoke(); 
         }
     }
 }

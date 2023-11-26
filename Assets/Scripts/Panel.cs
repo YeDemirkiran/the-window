@@ -12,7 +12,7 @@ public class Panel : MonoBehaviour
 
     [Header("Fade")]
     [SerializeField] float fadeDuration;
-    [SerializeField] float fadeEmission;
+    [ColorUsage(false, true)][SerializeField] Color emissionColor;
 
     bool instantiatedPanel = false, destroyed = false;
     int instantiatedSide = 0;
@@ -24,6 +24,11 @@ public class Panel : MonoBehaviour
     private void Awake()
     {
         renderer = GetComponent<Renderer>();
+
+        if (renderer == null)
+        {
+            renderer = GetComponentInChildren<Renderer>();
+        }
     }
 
     // Update is called once per frame
@@ -327,7 +332,7 @@ public class Panel : MonoBehaviour
         }
     }
 
-    void FadePanel()
+    public void FadePanel()
     {
         StopAllCoroutines();
         StartCoroutine(Fade());
@@ -341,8 +346,7 @@ public class Panel : MonoBehaviour
         mat.EnableKeyword("_EmissionColor");
 
         Color startingEmission = mat.GetColor("_EmissionColor");
-        Color targetEmission = startingEmission;
-        targetEmission.a = fadeEmission;
+        Color targetEmission = emissionColor;
 
         while (lerp < 1f)
         {
@@ -351,17 +355,6 @@ public class Panel : MonoBehaviour
             mat.SetColor("_EmissionColor", Color.Lerp(startingEmission, targetEmission, lerp));
 
             yield return null;
-        }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        Debug.Log("anan");
-
-        if (collision.transform.CompareTag("Player"))
-        {
-            Debug.Log("baban");
-            FadePanel();
         }
     }
 }
