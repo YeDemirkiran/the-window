@@ -3,7 +3,7 @@ using UnityEngine;
 
 public enum Axis { x, y, z }
 
-public class PanelTravel : MonoBehaviour
+public class Panel : MonoBehaviour
 {
     [SerializeField] Axis axis = Axis.x;
     [SerializeField] float speed, raycastDistance;
@@ -89,7 +89,7 @@ public class PanelTravel : MonoBehaviour
 
                     newPanel.transform.Rotate(Vector3.up * -90f);
 
-                    newPanel.GetComponent<PanelTravel>().motherObject = gameObject;
+                    newPanel.GetComponent<Panel>().motherObject = gameObject;
 
                     createdObject = newPanel;
 
@@ -134,7 +134,7 @@ public class PanelTravel : MonoBehaviour
 
                     newPanel.transform.Rotate(Vector3.up * 90f);
 
-                    newPanel.GetComponent<PanelTravel>().motherObject = gameObject;
+                    newPanel.GetComponent<Panel>().motherObject = gameObject;
 
                     createdObject = newPanel;
 

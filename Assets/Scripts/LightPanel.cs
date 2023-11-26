@@ -4,6 +4,7 @@ using UnityEngine;
 public class LightPanel : MonoBehaviour
 {
     [SerializeField] float fadeDuration;
+    [SerializeField] AudioClip audioClip;
 
     new Renderer renderer;
     new Collider collider;
@@ -16,21 +17,13 @@ public class LightPanel : MonoBehaviour
         collider = GetComponent<Collider>();
     }
 
-    //private void OnCollisionEnter(Collision collision)
-    //{
-    //    if (!collided && collision.transform.root.CompareTag("Player"))
-    //    {
-    //        FadePanel();
-    //        transform.parent = collision.transform.root;
-    //        collided = true;
-    //        collider.enabled = false;
-    //    }
-    //}
-
     private void OnTriggerEnter(Collider other)
     {
         if (!collided && other.transform.root.CompareTag("Player"))
         {
+            AudioManager.instance.audioSource.clip = audioClip;
+            AudioManager.instance.audioSource.Play();
+
             FadePanel();
             transform.parent = other.transform.root;
             collided = true;

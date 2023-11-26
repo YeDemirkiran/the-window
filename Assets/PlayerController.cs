@@ -4,6 +4,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] Camera cam;
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip launchClip;
     [SerializeField] float destinationReachTime = 3f;
     [SerializeField] LayerMask raycastLayer;
 
@@ -36,7 +38,7 @@ public class PlayerController : MonoBehaviour
             currentMovingObject = null;
             attachAtDestination = false;
 
-            destination = hit.point;   
+            destination = hit.point - transform.forward;   
 
             if (hit.collider.CompareTag("Stopper"))
             {
@@ -49,14 +51,13 @@ public class PlayerController : MonoBehaviour
             // Effects
 
             CameraEffects.Shake(clickShakeDuration, clickShakeFrequency, clickShakeMagnitude);
+            audioSource.PlayOneShot(launchClip);
         }
 
         if (attachAtDestination)
         {
-            destination = currentMovingObject.position;
+            destination = currentMovingObject.position + currentMovingObject.transform.forward;
         }
-
-        Debug.Log(attachAtDestination);
     }
 
     void MoveToDestination()
