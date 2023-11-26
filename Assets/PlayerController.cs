@@ -14,6 +14,10 @@ public class PlayerController : MonoBehaviour
 
     RaycastHit hit;
 
+    [Header("Shake Effects")]
+    [SerializeField] float clickShakeDuration = 0.25f;
+    [SerializeField] float clickShakeFrequency = 25f, clickShakeMagnitude = 0.5f;
+
     public Transform currentMovingObject { get; set; }
 
     private void Start()
@@ -41,6 +45,10 @@ public class PlayerController : MonoBehaviour
             }
 
             MoveToDestination();
+
+            // Effects
+
+            CameraEffects.Shake(clickShakeDuration, clickShakeFrequency, clickShakeMagnitude);
         }
 
         if (attachAtDestination)
