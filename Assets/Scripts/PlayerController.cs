@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -51,6 +52,17 @@ public class PlayerController : MonoBehaviour
                 if (hit.transform.root.TryGetComponent(out Panel panel))
                 {
                     action += panel.FadePanel;
+                    action += () =>
+                    {
+                        foreach (var p in Panel.panels)
+                        {
+                            if (panel.panelID == p.panelID)
+                            {
+                                Panel.panels.Remove(p);
+                                break;
+                            }
+                        }
+                    };
                 }
 
                 currentMovingObject = hit.collider.transform;
@@ -72,7 +84,7 @@ public class PlayerController : MonoBehaviour
 
         if (attachAtDestination)
         {
-            destination = currentMovingObject.position + currentMovingObject.transform.forward;
+            destination = currentMovingObject.position + currentMovingObject.forward;
         }
     }
 

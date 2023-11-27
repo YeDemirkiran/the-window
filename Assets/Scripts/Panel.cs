@@ -1,10 +1,14 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum Axis { x, y, z }
 
 public class Panel : MonoBehaviour
 {
+    public static List<Panel> panels = new List<Panel>();
+    public int panelID { get; private set; }
+
     [SerializeField] Axis axis = Axis.x;
     [SerializeField] float speed, raycastDistance;
     [SerializeField] LayerMask raycastLayermask;
@@ -17,6 +21,9 @@ public class Panel : MonoBehaviour
     bool instantiatedPanel = false, destroyed = false;
     int instantiatedSide = 0;
 
+    public bool dontAddInList { get; set; }
+
+
     public GameObject motherObject { get; set; }
     GameObject createdObject;
     new Renderer renderer;
@@ -28,6 +35,29 @@ public class Panel : MonoBehaviour
         if (renderer == null)
         {
             renderer = GetComponentInChildren<Renderer>();
+        }   
+    }
+
+    private void Start()
+    {
+        if (dontAddInList)
+        {
+            return;
+        }
+
+        panels.Add(this);
+        panels.Sort((x, y) => x.transform.position.y.CompareTo(y.transform.position.y));
+
+        int i = 0;
+        foreach (Panel panel in panels)
+        {
+            if (panel == this)
+            {
+                panelID = i + 1;
+                break;
+            }
+
+            i++;
         }
     }
 
@@ -85,6 +115,9 @@ public class Panel : MonoBehaviour
                     }
 
                     GameObject newPanel = Instantiate(gameObject);
+
+                    
+
                     newPanel.name = gameObject.name;
 
                     newPanel.transform.position = hit.point;
@@ -94,7 +127,12 @@ public class Panel : MonoBehaviour
 
                     newPanel.transform.Rotate(Vector3.up * -90f);
 
-                    newPanel.GetComponent<Panel>().motherObject = gameObject;
+
+                    Panel p = newPanel.GetComponent<Panel>();
+
+                    p.dontAddInList = true;
+                    p.panelID = panelID;
+                    p.motherObject = gameObject;
 
                     createdObject = newPanel;
 
@@ -103,8 +141,6 @@ public class Panel : MonoBehaviour
                         player.transform.parent = createdObject.transform;
                         player.currentMovingObject = createdObject.transform;
                     }
-
-                    //Debug.Log("3");
                 }
                 else if (AxisRaycast(raycastDistance, axis, raycastLayermask, out hit) == -1)  // Negative side
                 {
@@ -118,7 +154,6 @@ public class Panel : MonoBehaviour
                     instantiatedPanel = true;
                     instantiatedSide = -1;
 
-                    //Debug.Log("4");
                     PlayerController player = null;
 
                     foreach (Transform child in transform)
@@ -131,6 +166,7 @@ public class Panel : MonoBehaviour
                     }
 
                     GameObject newPanel = Instantiate(gameObject);
+
                     newPanel.name = gameObject.name;
 
                     newPanel.transform.position = hit.point;
@@ -139,7 +175,11 @@ public class Panel : MonoBehaviour
 
                     newPanel.transform.Rotate(Vector3.up * 90f);
 
-                    newPanel.GetComponent<Panel>().motherObject = gameObject;
+                    Panel p = newPanel.GetComponent<Panel>();
+
+                    p.dontAddInList = true;
+                    p.panelID = panelID;
+                    p.motherObject = gameObject;
 
                     createdObject = newPanel;
 
@@ -154,9 +194,6 @@ public class Panel : MonoBehaviour
             {
                 if (AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == 1 && instantiatedSide == -1) // Positive side
                 {
-                    // Destroy panel
-                    //Debug.Log("1");
-
                     Destroy(gameObject);
                     destroyed = true;
                 }
@@ -166,14 +203,8 @@ public class Panel : MonoBehaviour
                     destroyed = true;
                 }
             }
-        }
-        else
-        {
-            //Debug.Log("We have a mother object, waiting for it to get destroyed");
-        }     
+        }   
     }
-
-
 
     int AxisRaycast(Vector3 origin, float maxDistance, Axis axis, LayerMask layerMask)
     {
