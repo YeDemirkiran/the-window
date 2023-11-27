@@ -7,7 +7,38 @@ public enum Axis { x, y, z }
 public class Panel : MonoBehaviour
 {
     public static List<Panel> panels = new List<Panel>();
-    public int panelID { get; private set; }
+
+    public static Panel FindByID(int id)
+    {
+        foreach (Panel panel in panels)
+        {
+            if (panel.id == id)
+            {
+                return panel;
+            }
+        }
+
+        return null;
+    }
+
+    public static int FindByIDint(int id)
+    {
+        int i = 0;
+
+        foreach (Panel panel in panels)
+        {
+            if (panel.id == id)
+            {
+                return i;
+            }
+
+            i++;
+        }
+
+        return -1;
+    }
+
+    public int id { get; private set; }
 
     [SerializeField] Axis axis = Axis.x;
     [SerializeField] float speed, raycastDistance;
@@ -22,6 +53,7 @@ public class Panel : MonoBehaviour
     int instantiatedSide = 0;
 
     public bool dontAddInList { get; set; }
+    public bool deactivated { get; set; }
 
 
     public GameObject motherObject { get; set; }
@@ -53,7 +85,7 @@ public class Panel : MonoBehaviour
         {
             if (panel == this)
             {
-                panelID = i + 1;
+                id = i + 1;
                 break;
             }
 
@@ -91,7 +123,9 @@ public class Panel : MonoBehaviour
             {
                 RaycastHit hit;
 
-                if (AxisRaycast(raycastDistance, axis, raycastLayermask, out hit) == 1) // Positive side
+                int raycast = AxisRaycast(raycastDistance, axis, raycastLayermask, out hit);
+
+                if (raycast != 0)
                 {
                     if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Light Panel"))
                     {
@@ -101,103 +135,58 @@ public class Panel : MonoBehaviour
 
                     // Instantiate panel
                     instantiatedPanel = true;
-                    instantiatedSide = 1;
+                    instantiatedSide = raycast;
 
-                    PlayerController player = null;
+                    PlayerController player = PlayerController.instance;
+                    bool playerWasChild = false;
 
-                    foreach (Transform child in transform)
+                    if (player.transform.parent == transform)
                     {
-                        if (child.TryGetComponent(out player))
-                        {
-                            player.transform.parent = null;
-                            break;
-                        }
-                    }
+                        player.transform.parent = null;
+                        playerWasChild = true;
+                    }                    
 
                     GameObject newPanel = Instantiate(gameObject);
-
-                    
-
                     newPanel.name = gameObject.name;
-
                     newPanel.transform.position = hit.point;
 
-                    newPanel.transform.position -= transform.right * meshObject.lossyScale.z / 2f;
+                    newPanel.transform.position += -raycast * transform.right * meshObject.lossyScale.z / 2f;
                     newPanel.transform.position -= transform.forward * meshObject.lossyScale.x / 2f;
-
-                    newPanel.transform.Rotate(Vector3.up * -90f);
-
+                    newPanel.transform.Rotate(Vector3.up * -raycast * 90f);
 
                     Panel p = newPanel.GetComponent<Panel>();
 
                     p.dontAddInList = true;
-                    p.panelID = panelID;
+                    p.id = id;
+                    p.deactivated = deactivated;
                     p.motherObject = gameObject;
 
                     createdObject = newPanel;
 
-                    if (player != null)
+                    if (PlayerController.instance.currentMovingObject == transform)
                     {
-                        player.transform.parent = createdObject.transform;
-                        player.currentMovingObject = createdObject.transform;
-                    }
-                }
-                else if (AxisRaycast(raycastDistance, axis, raycastLayermask, out hit) == -1)  // Negative side
-                {
-                    if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Light Panel"))
-                    {
-                        speed = -speed;
-                        return;
-                    }
+                        Debug.Log("111");
 
-                    // Instantiate panel
-                    instantiatedPanel = true;
-                    instantiatedSide = -1;
-
-                    PlayerController player = null;
-
-                    foreach (Transform child in transform)
-                    {
-                        if (child.TryGetComponent(out player))
+                        if (playerWasChild)
                         {
-                            player.transform.parent = null;
-                            break;
+                            Debug.Log("333");
+
+                            player.transform.parent = createdObject.transform.root;
                         }
-                    }
 
-                    GameObject newPanel = Instantiate(gameObject);
-
-                    newPanel.name = gameObject.name;
-
-                    newPanel.transform.position = hit.point;
-                    newPanel.transform.position += transform.right * meshObject.lossyScale.z / 2f;
-                    newPanel.transform.position -= transform.forward * meshObject.lossyScale.x / 2f;
-
-                    newPanel.transform.Rotate(Vector3.up * 90f);
-
-                    Panel p = newPanel.GetComponent<Panel>();
-
-                    p.dontAddInList = true;
-                    p.panelID = panelID;
-                    p.motherObject = gameObject;
-
-                    createdObject = newPanel;
-
-                    if (player != null)
-                    {
-                        player.transform.parent = createdObject.transform;
                         player.currentMovingObject = createdObject.transform;
-                    }        
+                    }
+                    else
+                    {
+                        Debug.Log("222");
+                    }
                 }
             }
             else if (!destroyed)
             {
-                if (AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == 1 && instantiatedSide == -1) // Positive side
-                {
-                    Destroy(gameObject);
-                    destroyed = true;
-                }
-                else if (AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == -1 && instantiatedSide == 1)  // Negative side
+                int raycast = AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask);
+
+                if ((raycast == 1 && instantiatedSide == -1) || (raycast == -1 && instantiatedSide == 1))
                 {
                     Destroy(gameObject);
                     destroyed = true;
@@ -240,50 +229,6 @@ public class Panel : MonoBehaviour
                     return 1;
                 }
                 else if (Physics.Raycast(origin, -transform.forward, maxDistance, layerMask))
-                {
-                    return -1;
-                }
-
-                break;
-        }
-
-        return 0;
-    }
-
-    int AxisRaycast(float maxDistance, Axis axis, LayerMask layerMask)
-    {
-        switch (axis)
-        {
-            case Axis.x:
-                if (Physics.Raycast(transform.position, transform.right, maxDistance, layerMask))
-                {
-                    return 1;
-                } 
-                else if (Physics.Raycast(transform.position, -transform.right, maxDistance, layerMask))
-                {
-                    return -1;
-                }
-
-                break;
-
-            case Axis.y:
-                if (Physics.Raycast(transform.position, transform.up, maxDistance, layerMask))
-                {
-                    return 1;
-                }
-                else if (Physics.Raycast(transform.position, -transform.up, maxDistance, layerMask))
-                {
-                    return -1;
-                }
-
-                break;
-
-            case Axis.z:
-                if (Physics.Raycast(transform.position, transform.forward, maxDistance, layerMask))
-                {
-                    return 1;
-                }
-                else if (Physics.Raycast(transform.position, -transform.forward, maxDistance, layerMask))
                 {
                     return -1;
                 }
@@ -363,9 +308,24 @@ public class Panel : MonoBehaviour
         }
     }
 
-    public void FadePanel()
+    public void Deactivate()
     {
-        StopAllCoroutines();
+        if (!deactivated)
+        {
+            Debug.Log(panels.Count);
+
+            deactivated = true;
+            FadePanel();
+
+            panels.RemoveAt(FindByIDint(id));
+            
+
+            Debug.Log(panels.Count);
+        }        
+    }
+
+    void FadePanel()
+    {
         StartCoroutine(Fade());
     }
 

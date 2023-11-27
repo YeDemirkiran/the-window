@@ -1,10 +1,11 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController instance;
+
     [SerializeField] Camera cam;
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip launchClip;
@@ -26,6 +27,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float hitShakeFrequency = 50f, hitShakeMagnitude = 0.75f;
 
     public Transform currentMovingObject { get; set; }
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     private void Start()
     {
@@ -51,21 +57,10 @@ public class PlayerController : MonoBehaviour
             {
                 if (hit.transform.root.TryGetComponent(out Panel panel))
                 {
-                    action += panel.FadePanel;
-                    action += () =>
-                    {
-                        foreach (var p in Panel.panels)
-                        {
-                            if (panel.panelID == p.panelID)
-                            {
-                                Panel.panels.Remove(p);
-                                break;
-                            }
-                        }
-                    };
+                    action += panel.Deactivate;
                 }
 
-                currentMovingObject = hit.collider.transform;
+                currentMovingObject = panel.transform;
                 attachAtDestination = true;
             }
             else
@@ -114,7 +109,7 @@ public class PlayerController : MonoBehaviour
 
         if (attachAtDestination)
         {
-            transform.parent = hit.collider.transform.root;
+            transform.parent = currentMovingObject.root;
         }
         else
         {
