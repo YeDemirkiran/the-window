@@ -4,6 +4,8 @@ using UnityEngine;
 public class Shield : MonoBehaviour
 {
     [SerializeField] float shieldFadeDuration;
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip hitClip;
     new Renderer renderer;
 
     // Start is called before the first frame update
@@ -50,5 +52,10 @@ public class Shield : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        audioSource.PlayOneShot(hitClip);
     }
 }

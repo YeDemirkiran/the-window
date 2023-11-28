@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public enum Axis { x, y, z }
 
@@ -40,15 +41,24 @@ public class Panel : MonoBehaviour
 
     public int id { get; private set; }
 
+    [Header("General")]
     [SerializeField] Axis axis = Axis.x;
     [SerializeField] float speed, raycastDistance;
     [SerializeField] LayerMask raycastLayermask;
     [SerializeField] Transform meshObject;
+    [ColorUsage(false, true)][SerializeField] Color emissionColor;
+
+    [Header("Pulse")]
+    [SerializeField] float pulseFrequency;
+    [ColorUsage(false, true)][SerializeField] Color pulseLightColor;
+    [FormerlySerializedAs("pulseColor")][ColorUsage(false, true)][SerializeField] Color pulseDarkColor;
+    Coroutine pulse;
 
     [Header("Fade")]
     [SerializeField] float fadeDuration;
-    [ColorUsage(false, true)][SerializeField] Color emissionColor;
+    [ColorUsage(false, true)][SerializeField] Color fadedColor;
 
+    // Panel instantiation when touching a corner
     bool instantiatedPanel = false, destroyed = false;
     int instantiatedSide = 0;
 
@@ -67,7 +77,9 @@ public class Panel : MonoBehaviour
         if (renderer == null)
         {
             renderer = GetComponentInChildren<Renderer>();
-        }   
+        }
+
+        renderer.material.SetColor("_EmissionColor", emissionColor);
     }
 
     private void Start()
@@ -119,7 +131,7 @@ public class Panel : MonoBehaviour
                     break;
             }
 
-            if (!instantiatedPanel)
+            if (!instantiatedPanel && !destroyed)
             {
                 RaycastHit hit;
 
@@ -150,47 +162,52 @@ public class Panel : MonoBehaviour
                     newPanel.name = gameObject.name;
                     newPanel.transform.position = hit.point;
 
+                    if (meshObject == null)
+                    {
+                        Debug.Log("Mesh Object is destroyed");
+                    }
+
                     newPanel.transform.position += -raycast * transform.right * meshObject.lossyScale.z / 2f;
                     newPanel.transform.position -= transform.forward * meshObject.lossyScale.x / 2f;
                     newPanel.transform.Rotate(Vector3.up * -raycast * 90f);
 
                     Panel p = newPanel.GetComponent<Panel>();
 
-                    p.dontAddInList = true;
-                    p.id = id;
-                    p.deactivated = deactivated;
-                    p.motherObject = gameObject;
+                    SignHeir(p);
 
                     createdObject = newPanel;
 
                     if (PlayerController.instance.currentMovingObject == transform)
                     {
-                        Debug.Log("111");
-
                         if (playerWasChild)
                         {
-                            Debug.Log("333");
-
                             player.transform.parent = createdObject.transform.root;
                         }
 
                         player.currentMovingObject = createdObject.transform;
                     }
-                    else
-                    {
-                        Debug.Log("222");
-                    }
                 }
             }
             else if (!destroyed)
             {
-                int raycast = AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask);
-
-                if ((raycast == 1 && instantiatedSide == -1) || (raycast == -1 && instantiatedSide == 1))
+                if (AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == 1 && instantiatedSide == -1) // Positive side
                 {
                     Destroy(gameObject);
                     destroyed = true;
                 }
+                else if (AxisRaycast(transform.position - (axisVec * meshObject.lossyScale.x / 2f), raycastDistance, axis, raycastLayermask) == -1 && instantiatedSide == 1)  // Negative side
+                {
+                    Destroy(gameObject);
+                    destroyed = true;
+                }
+
+                //int raycast = AxisRaycast(axisVec * meshObject.lossyScale.x / 2f, raycastDistance, axis, raycastLayermask);
+
+                //if ((raycast == 1 && instantiatedSide == -1) || (raycast == -1 && instantiatedSide == 1))
+                //{
+                //    Destroy(gameObject);
+                //    destroyed = true;
+                //}
             }
         }   
     }
@@ -310,17 +327,16 @@ public class Panel : MonoBehaviour
 
     public void Deactivate()
     {
-        if (!deactivated)
+        if (!deactivated && LevelManager.instance.currentPanelID == id)
         {
-            Debug.Log(panels.Count);
+            StopPulse();
 
             deactivated = true;
             FadePanel();
 
             panels.RemoveAt(FindByIDint(id));
             
-
-            Debug.Log(panels.Count);
+            LevelManager.instance.IncreaseID();
         }        
     }
 
@@ -337,7 +353,7 @@ public class Panel : MonoBehaviour
         mat.EnableKeyword("_EmissionColor");
 
         Color startingEmission = mat.GetColor("_EmissionColor");
-        Color targetEmission = emissionColor;
+        Color targetEmission = fadedColor;
 
         while (lerp < 1f)
         {
@@ -346,6 +362,89 @@ public class Panel : MonoBehaviour
             mat.SetColor("_EmissionColor", Color.Lerp(startingEmission, targetEmission, lerp));
 
             yield return null;
+        }
+    }
+
+    public void StartPulse()
+    {
+        StopPulse();
+
+        pulse = StartCoroutine(PulseIE());
+    }
+
+    public void StopPulse()
+    {
+        if (pulse != null)
+        {
+            StopCoroutine(pulse);
+            pulse = null;
+        }
+    }
+
+    IEnumerator PulseIE()
+    {
+        Material mat = renderer.material;
+
+        mat.EnableKeyword("_EmissionColor");
+
+        Color startingEmission = mat.GetColor("_EmissionColor");
+        Color targetEmission = pulseDarkColor;
+
+        float interval = 1f / pulseFrequency;
+        float timer = 0f;
+
+        int cycle = -1;
+
+        while (true)
+        {
+            timer += Time.deltaTime;
+
+            if (timer >= interval)
+            {
+                timer = 0f;
+
+                cycle = -cycle;
+
+                startingEmission = mat.GetColor("_EmissionColor");
+
+                if (cycle == -1)
+                {
+                    targetEmission = pulseDarkColor;
+                }
+                else
+                {
+                    targetEmission = pulseLightColor;
+                }
+            }
+
+            mat.SetColor("_EmissionColor", Color.Lerp(startingEmission, targetEmission, timer / interval));
+
+            yield return null;
+        }
+    }
+
+    void SignHeir(Panel p)
+    {
+        p.dontAddInList = true;
+        p.id = id;
+        p.deactivated = deactivated;
+        p.motherObject = gameObject;
+
+        if (pulse != null)
+        {
+            StopPulse();
+            p.StartPulse();
+        }
+
+        int i = FindByIDint(p.id);
+
+        if (i >= 0 && i < panels.Count)
+        {
+            panels[FindByIDint(p.id)] = p;
+        }
+        else
+        {
+            Debug.Log("We are fucked. ID: " + p.id);
         }
     }
 }

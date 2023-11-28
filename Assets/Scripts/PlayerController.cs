@@ -49,7 +49,7 @@ public class PlayerController : MonoBehaviour
             currentMovingObject = null;
             attachAtDestination = false;
 
-            destination = hit.point - transform.forward;
+            destination = hit.point - (transform.forward * transform.lossyScale.z / 2f);
 
             UnityAction action = null;    
 
@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
 
         if (attachAtDestination)
         {
-            destination = currentMovingObject.position + currentMovingObject.forward;
+            destination = currentMovingObject.position + (currentMovingObject.forward * transform.lossyScale.z);
         }
     }
 
