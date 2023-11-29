@@ -1558,7 +1558,7 @@ GameObject:
   - component: {fileID: 635782723}
   - component: {fileID: 635782724}
   m_Layer: 0
-  m_Name: PanelManager
+  m_Name: LevelManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1591,6 +1591,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fa0cb98d2bbce748857e3c9a74546a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startDelay: 1
+  podArriveDelay: 2
+  alarmSound: {fileID: 8300000, guid: 23423acf87b6c52499cb79a22e246f45, type: 3}
+  escapeMusic: {fileID: 8300000, guid: f0b9a648d6579ca479fa193592d16244, type: 3}
+  podPrefab: {fileID: 4631472907386499072, guid: e12d17288f7692d4ca3b72d06b869948,
+    type: 3}
 --- !u!1 &747367027
 GameObject:
   m_ObjectHideFlags: 0
@@ -2827,6 +2833,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1141351510}
   - component: {fileID: 1141351511}
+  - component: {fileID: 1141351512}
   m_Layer: 0
   m_Name: MusicManager
   m_TagString: Untagged
@@ -2946,6 +2953,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1141351512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141351509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab8c69ddcf683c4d80695f09ec9b464, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1150870123
 GameObject:
   m_ObjectHideFlags: 0
@@ -6774,84 +6793,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2147337490}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &907460724594809729
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -20
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -5
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 569212776519047407, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4316439949182528227, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4706999637194012177, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_Name
-      value: Light Panel
-      objectReference: {fileID: 0}
-    - target: {fileID: 4706999637194012177, guid: 4d2463a582c4dac49b525f0c64aef6b8,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 4d2463a582c4dac49b525f0c64aef6b8, type: 3}
 --- !u!1 &4434530266514429833
 GameObject:
   m_ObjectHideFlags: 2
@@ -7034,7 +6975,7 @@ MonoBehaviour:
   invertCamera: 0
   cameraCanMove: 1
   mouseSensitivity: 2
-  maxLookAngle: 90
+  maxLookAngle: 80
   lockCursor: 1
   crosshair: 1
   crosshairImage: {fileID: 21300000, guid: be4ce60e2c9768c44b9b10b9c5258045, type: 3}
@@ -7416,4 +7357,3 @@ SceneRoots:
   - {fileID: 478718193}
   - {fileID: 1150870126}
   - {fileID: 903846630}
-  - {fileID: 907460724594809729}

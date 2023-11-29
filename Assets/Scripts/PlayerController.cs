@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     public static PlayerController instance;
 
-    [SerializeField] Camera cam;
+    public Camera cam;
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip launchClip;
     [SerializeField] float destinationReachTime = 3f;
