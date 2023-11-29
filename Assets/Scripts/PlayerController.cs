@@ -51,17 +51,14 @@ public class PlayerController : MonoBehaviour
 
             destination = hit.point - (transform.forward * transform.lossyScale.z / 2f);
 
-            UnityAction action = null;    
+            UnityAction action = null;
 
-            if (hit.collider.CompareTag("Stopper"))
+            if (hit.transform.root.TryGetComponent(out Panel panel))
             {
-                if (hit.transform.root.TryGetComponent(out Panel panel))
-                {
-                    action += panel.Deactivate;
-                }
-
                 currentMovingObject = panel.transform;
                 attachAtDestination = true;
+
+                action += () => { currentMovingObject.GetComponent<Panel>().Deactivate(); };
             }
             else
             {
@@ -109,7 +106,7 @@ public class PlayerController : MonoBehaviour
 
         if (attachAtDestination)
         {
-            transform.parent = currentMovingObject.root;
+            transform.SetParent(currentMovingObject.root);
         }
         else
         {

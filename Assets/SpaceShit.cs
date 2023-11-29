@@ -35,7 +35,7 @@ public class SpaceShit : MonoBehaviour
         projectile.transform.eulerAngles = projectileSpawnPoint.eulerAngles;
         projectile.transform.parent = transform;
 
-        projectile.GetComponent<CaptureProjectile>().Prepare(1f);
+        projectile.GetComponent<CaptureProjectile>().Prepare(3f);
     }
 
     IEnumerator MoveToPlayer(float duration, float offset)
@@ -64,8 +64,11 @@ public class SpaceShit : MonoBehaviour
             yield return null;
         }
 
-        canShoot = true;
-
+        if (lerp >= 0.75f)
+        {
+            canShoot = true;
+        }
+        
         //transform.position = player.position + (player.forward * offset);
         //transform.rotation = Quaternion.LookRotation((player.position - transform.position).normalized); 
     }

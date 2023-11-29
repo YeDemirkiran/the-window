@@ -450,7 +450,7 @@ public class Panel : MonoBehaviour
         }
         else
         {
-            Debug.Log("We are fucked. ID: " + p.id);
+            //Debug.Log("We are fucked. ID: " + p.id);
         }
     }
 }

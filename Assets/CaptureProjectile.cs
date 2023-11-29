@@ -1,9 +1,13 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class CaptureProjectile : MonoBehaviour
 {
     new Renderer renderer;
+
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip shootSound;
 
     // Start is called before the first frame update
     void Awake()
@@ -30,6 +34,8 @@ public class CaptureProjectile : MonoBehaviour
         Color startingColor = new Color(0f, 0f, 0f, 0f);
         Color targetColor = mat.GetColor("_EmissionColor");
 
+        audioSource.Play();
+
         while (lerp < 1f)
         {
             lerp += Time.deltaTime / duration;
@@ -53,13 +59,15 @@ public class CaptureProjectile : MonoBehaviour
 
     IEnumerator ShootIE(float reachDuration)
     {
+        audioSource.PlayOneShot(shootSound);
+
         float lerp = 0f;
 
         Vector3 startingPosition = transform.position;
 
         Transform player = PlayerController.instance.cam.transform;
 
-        transform.parent = null;
+        transform.parent = player;
 
         while (lerp < 1f)
         {
@@ -70,6 +78,7 @@ public class CaptureProjectile : MonoBehaviour
         }
 
         transform.position = player.position;
-        transform.parent = player;
+
+        AudioManager.instance.audioMixer.SetFloat("lowpass", 500f);
     }
 }
