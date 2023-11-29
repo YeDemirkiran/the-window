@@ -39,13 +39,14 @@ public class Panel : MonoBehaviour
         return -1;
     }
 
-    public int id { get; private set; }
+    public int id { get; set; }
 
     [Header("General")]
-    [SerializeField] Axis axis = Axis.x;
-    [SerializeField] float speed, raycastDistance;
+    public Axis axis = Axis.x;
+    public float speed;
+    [SerializeField] float raycastDistance;
     [SerializeField] LayerMask raycastLayermask;
-    [SerializeField] Transform meshObject;
+    public Transform meshObject;
     [ColorUsage(false, true)][SerializeField] Color emissionColor;
 
     [Header("Pulse")]
@@ -84,25 +85,25 @@ public class Panel : MonoBehaviour
 
     private void Start()
     {
-        if (dontAddInList)
-        {
-            return;
-        }
+        //if (dontAddInList)
+        //{
+        //    return;
+        //}
 
-        panels.Add(this);
-        panels.Sort((x, y) => x.transform.position.y.CompareTo(y.transform.position.y));
+        
+        //panels.Sort((x, y) => x.transform.position.y.CompareTo(y.transform.position.y));
 
-        int i = 0;
-        foreach (Panel panel in panels)
-        {
-            if (panel == this)
-            {
-                id = i + 1;
-                break;
-            }
+        //int i = 0;
+        //foreach (Panel panel in panels)
+        //{
+        //    if (panel == this)
+        //    {
+        //        id = i + 1;
+        //        break;
+        //    }
 
-            i++;
-        }
+        //    i++;
+        //}
     }
 
     // Update is called once per frame
@@ -117,18 +118,23 @@ public class Panel : MonoBehaviour
         if (motherObject == null)
         {
             Vector3 axisVec = Vector3.zero;
+            Vector3 panelAxis = Vector3.zero;
+            Vector3 rotationAxis = Vector3.zero;
 
             switch (axis)
             {
                 case Axis.x:
                     axisVec = Vector3.right;
+                    panelAxis = transform.right;
+                    rotationAxis = Vector3.up;
                     break;
                 case Axis.y:
                     axisVec = Vector3.up;
+                    panelAxis = transform.up;
+                    rotationAxis = -Vector3.right;
                     break;
                 case Axis.z:
-                    axisVec = Vector3.forward;
-                    break;
+                    return;
             }
 
             if (!instantiatedPanel && !destroyed)
@@ -158,18 +164,16 @@ public class Panel : MonoBehaviour
                         playerWasChild = true;
                     }                    
 
+                    // Instantiate the panel, name it, and position it at the hit point
                     GameObject newPanel = Instantiate(gameObject);
                     newPanel.name = gameObject.name;
                     newPanel.transform.position = hit.point;
 
-                    if (meshObject == null)
-                    {
-                        Debug.Log("Mesh Object is destroyed");
-                    }
+                    // After the positioning at the hit point, the position needs to be adjusted according to the panel
 
-                    newPanel.transform.position += -raycast * transform.right * meshObject.lossyScale.z / 2f;
+                    newPanel.transform.position += -raycast * panelAxis * meshObject.lossyScale.z / 2f;
                     newPanel.transform.position -= transform.forward * meshObject.lossyScale.x / 2f;
-                    newPanel.transform.Rotate(Vector3.up * -raycast * 90f);
+                    newPanel.transform.Rotate(rotationAxis * -raycast * 90f);
 
                     Panel p = newPanel.GetComponent<Panel>();
 
@@ -181,7 +185,9 @@ public class Panel : MonoBehaviour
                     {
                         if (playerWasChild)
                         {
-                            player.transform.parent = createdObject.transform.root;
+                            player.transform.parent = createdObject.transform;
+                            player.transform.position = createdObject.transform.position;
+                            player.transform.position += (createdObject.transform.forward * 1f);
                         }
 
                         player.currentMovingObject = createdObject.transform;

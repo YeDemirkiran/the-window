@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class LevelManager : MonoBehaviour
 {
@@ -32,5 +31,15 @@ public class LevelManager : MonoBehaviour
         {
             p.StartPulse();
         }
+    }
+
+    public void NewLevel()
+    {
+        Debug.Log("Creating a new level");
+    }
+
+    IEnumerator NewLevel()
+    {
+        
     }
 }

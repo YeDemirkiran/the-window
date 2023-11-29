@@ -63,6 +63,8 @@ public class LightPanel : MonoBehaviour
             yield return null;
         }
 
+        LevelManager.instance.SendMessage("NewLevel");
+
         Destroy(gameObject);
     }
 }   
